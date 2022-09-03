@@ -1,79 +1,101 @@
 ---
-import BaseHead from '../components/BaseHead.astro';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
-import { SITE_TITLE } from '../config';
-import fs from 'fs/promises'
+import ListLayout from "../layouts/ListLayout.astro";
+import fs from "fs/promises";
 
-var res = await fs.readdir('./src/pages/novels', { withFileTypes: true, });
-res = res.filter(r => r.isDirectory())
-
-console.log({ res })
-
-var novels: any[] = []
-
-for await (const dir of res)
-{
-console.log({ dir })
-	var info = await fs.stat(`./src/pages/novels/${dir.name}`)
-	console.table(info)
-	var novel = {
-		name: dir.name,
-		createdAt:new Date(info.birthtime),
-		updatedAt: new Date(info.mtimeMs),
-		href: `novels/${dir.name}`
-	}
-
-	novels.push(novel)
+enum NovelStatus {
+	NEW,
+	IN_PROGRESS,
+	COMPLETED,
+	DROP,
 }
 
-console.log({novels})
+type Novel = {
+	name: string;
+	updatedAt: Date;
+	createdAt: Date;
+	slug: string;
+	href: string;
+	author: string;
+	originalUrl: string;
+	status: NovelStatus;
+};
 
-const posts = (await Astro.glob('./blog/*.{md,mdx}')).sort(
-	(a, b) => new Date(b.frontmatter.pubDate).valueOf() - new Date(a.frontmatter.pubDate).valueOf()
-);
+var res = await fs.readdir("./src/pages/novels", { withFileTypes: true });
+res = res.filter((r) => r.isDirectory());
 
+var meta = (await import("./novels/novel-info.json")).default;
+
+console.log({ res });
+
+var novels: Novel[] = [];
+
+for await (const dir of res) {
+	var info = await fs.stat(`./src/pages/novels/${dir.name}`);
+	var dirMeta = meta.find((m) => m.slug == dir.name) || ({} as Novel);
+
+	var novel = {
+		// name: dir.name,
+		createdAt: new Date(info.birthtime),
+		updatedAt: new Date(info.mtimeMs),
+		href: `novels/${dir.name}`,
+		...dirMeta,
+	};
+
+	novels.push(novel);
+}
 ---
 
-<!DOCTYPE html>
-<html lang="en-us">
-	<head>
-		<BaseHead title={SITE_TITLE}  />
-	</head>
-	<body>
-		<Header title={SITE_TITLE} />
-	
-		<main class="container mx-auto">
-			<table class="border-collapse w-full">
-				<thead >
-					<tr>
-						<th scope="col" class="sm:w-2/5 lg:w-3/12 pr-8 py-3 font-normal border">
-							Updated at
-						</th>
-						<th scope="col" class="sm:w-4/5 lg:w-8/12 pr-8 py-3 font-normal border">
-							Title
-						</th>	
-					</tr>
-				</thead>
+<ListLayout>
+	<table class="border-collapse w-full">
+		<thead>
+			<tr>
+				<th scope="col" class="sm:w-2/5 lg:w-2/12 pr-8 py-3 font-normal border">
+					Updated at
+				</th>
+				<th scope="col" class="sm:w-4/5 lg:w-4/12 pr-8 py-3 font-normal border">
+					Title
+				</th>
+				<th scope="col" class="sm:w-4/5 lg:w-2/12 pr-8 py-3 font-normal border">
+					Author
+				</th>
+				<!-- <th scope="col" class="sm:w-4/5 lg:w-8/12 pr-8 py-3 font-normal border">
+					Title
+				</th> -->
+			</tr>
+		</thead>
 
-				<tbody>
-					{novels.sort((a, b) => new Date(b.updatedAt).valueOf() - new Date(a.updatedAt).valueOf()).map((novel) => (
+		<tbody>
+			{
+				novels
+					.sort(
+						(a, b) =>
+							new Date(b.updatedAt).valueOf() - new Date(a.updatedAt).valueOf()
+					)
+					.map((novel) => (
 						<tr>
-							<td class="py-3 px-5 pr-8  sm:w-2/5 lg:w-3/12 font-normal border">
-								<time datetime={novel.updatedAt} class="text-gray-500">
-									{new Date(novel.updatedAt).toLocaleDateString("en-US", { year: 'numeric', month: 'short', day: 'numeric', hour12: false, hour: 'numeric', minute: 'numeric' })}	
+							<td class="py-3 px-5 pr-8 lg:w-2/12 font-normal border">
+								<time class="text-gray-500">
+									{new Date(novel.updatedAt).toLocaleDateString("en-US", {
+										year: "numeric",
+										month: "short",
+										day: "numeric",
+										hour12: false,
+										hour: "numeric",
+										minute: "numeric",
+									})}
 								</time>
 							</td>
-							<td class="py-3 px-5 pr-8  sm:w-2/5 lg:w-8/12 font-normal border">
-								<a href={novel.href} class="text-blue-500 hover:text-blue-600">{novel.name}</a>
+							<td class="py-3 px-5 pr-8  sm:w-2/5 lg:w-4/12 font-normal border">
+								<a href={novel.href} class="text-blue-500 hover:text-blue-600">
+									{novel.name}
+								</a>
+							</td>
+							<td class="py-3 px-5 pr-8  sm:w-2/5 lg:w-2/12 font-normal border">
+								{novel.author}
 							</td>
 						</tr>
-					))}
-				</tbody>
-			</table>
-		
-		</main>
-
-		<Footer />
-	</body>
-</html>
+					))
+			}
+		</tbody>
+	</table>
+</ListLayout>

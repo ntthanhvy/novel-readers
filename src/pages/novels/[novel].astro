@@ -1,88 +1,80 @@
 ---
-import BaseHead from '../../components/BaseHead.astro';
-import Header from '../../components/Header.astro';
-import Footer from '../../components/Footer.astro';
-import { SITE_TITLE } from '../../config';
+import ListLayout from "../../layouts/ListLayout.astro";
 
-import fs from 'fs/promises'
+import fs from "fs/promises";
 
-const { novel } = Astro.params
+const { novel } = Astro.params;
 
-const data = await fs.readdir(`./src/pages/novels/${novel}`)
+// const metadata = await import("./novel-info.json");
 
-var files = await Astro.glob("/src/pages/novels/**/*.{mdx,md}")
-files = files.filter(f => f.file.includes(novel))
+// console.log({ metadata });
 
-console.log({files })
+var files = await Astro.glob("/src/pages/novels/**/*.{mdx,md}");
+files = files.filter((f) => f.file.includes(novel)).sort((a, b) => b.file.localeCompare(a.file));
+
+// console.log({files })
 
 export const getStaticPaths = async () => {
-  var res = await fs.readdir('./src/pages/novels', { withFileTypes: true, });
-  res = res.filter(r => r.isDirectory())
-  // console.table(res)
+	var res = await fs.readdir("./src/pages/novels", { withFileTypes: true });
+	res = res.filter((r) => r.isDirectory());
+	// console.table(res)
 
-  const paths = res.map(r => ({
-    params: { novel: r.name },
-    props: {}
-  }))
+	const paths = res.map((r) => ({
+		params: { novel: r.name },
+		props: {},
+	}));
 
-  // console.table(paths )
+	// console.table(paths )
 
-  return [
-    ...paths
-  ]
-}
+	return [...paths];
+};
 ---
 
+<ListLayout>
+	<h1 class="text-4xl font-bold text-center">{novel}</h1>
 
-<!DOCTYPE html>
-<html lang="en-us">
-	<head>
-		<BaseHead title={SITE_TITLE}  />
-	</head>
-	<body>
-		<Header title={SITE_TITLE} />
-	
-		<main class="container mx-auto">
-      <h1 class="text-4xl font-bold text-center">{novel}</h1>
+	<table class="border-collapse w-full mt-10">
+		<thead>
+			<tr>
+				<th scope="col" class="sm:w-2/5 lg:w-3/12 pr-8 py-3 font-normal border">
+					Updated at
+				</th>
+				<th scope="col" class="sm:w-4/5 lg:w-8/12 pr-8 py-3 font-normal border">
+					Title
+				</th>
+			</tr>
+		</thead>
 
-      <table class="border-collapse w-full mt-10">
-				<thead >
+		<tbody>
+			{
+				files.map((chapter) => (
 					<tr>
-						<th scope="col" class="sm:w-2/5 lg:w-3/12 pr-8 py-3 font-normal border">
-							Updated at
-						</th>
-						<th scope="col" class="sm:w-4/5 lg:w-8/12 pr-8 py-3 font-normal border">
-							Url
-						</th>
-            <th scope="col" class="sm:w-4/5 lg:w-8/12 pr-8 py-3 font-normal border">
-              Title
-						</th>
+						<td class="py-3 px-5 pr-8  sm:w-2/5 lg:w-3/12 font-normal border">
+							<time
+								datetime={chapter.frontmatter.pubDate}
+								class="text-gray-500"
+							>
+								{new Date(chapter.frontmatter.pubDate).toLocaleDateString(
+									"en-US",
+									{
+										year: "numeric",
+										month: "short",
+										day: "numeric",
+										hour12: false,
+										hour: "numeric",
+										minute: "numeric",
+									}
+								)}
+							</time>
+						</td>
+						<td class="py-3 px-5 pr-8  sm:w-2/5 lg:w-8/12 font-normal border">
+							<a href={chapter.url} class="text-blue-500 hover:text-blue-600">
+								{chapter.frontmatter.title}
+							</a>
+						</td>
 					</tr>
-				</thead>
-
-				<tbody>
-					{files.map((chapter) => (
-						<tr>
-							<td class="py-3 px-5 pr-8  sm:w-2/5 lg:w-3/12 font-normal border">
-								<time datetime={chapter.frontmatter.pubDate} class="text-gray-500">
-									{new Date(chapter.frontmatter.pubDate).toLocaleDateString("en-US", { year: 'numeric', month: 'short', day: 'numeric', hour12: false, hour: 'numeric', minute: 'numeric' })}	
-								</time>
-							</td>
-							<td class="py-3 px-5 pr-8  sm:w-2/5 lg:w-8/12 font-normal border">
-								<a href={chapter.url} class="text-blue-500 hover:text-blue-600">{chapter.frontmatter.title}</a>
-							</td>
-              
-							<td class="py-3 px-5 pr-8  sm:w-2/5 lg:w-8/12 font-normal border">
-								<a href={chapter.url} class="text-blue-500 hover:text-blue-600">{chapter.frontmatter.title}</a>
-							</td>
-              
-						</tr>
-					))}
-				</tbody>
-			</table>
-		
-		</main>
-
-		<Footer />
-	</body>
-</html>
+				))
+			}
+		</tbody>
+	</table>
+</ListLayout>

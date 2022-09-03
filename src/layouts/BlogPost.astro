@@ -27,31 +27,42 @@ const {
 				margin: 0.25em 0 0;
 			}
 			hr {
-  				border-top: 1px solid #DDD;
+				border-top: 1px solid #ddd;
 				margin: 1rem 0;
 			}
 		</style>
 	</head>
 
-	<body>
+	<body class="bg-slate-200 text-slate-800 text-lg">
 		<Header />
 		<main class="container mx-auto mt-10">
-			<article class="whitespace-pre-wrap">
-				{heroImage && (
-					<img
-						width={720}
-						height={360}
-						src={heroImage}
-						alt=""
-					/>
-				)}
+			<article class="whitespace-pre-wrap px-5 md:px-0">
+				{heroImage && <img width={720} height={360} src={heroImage} alt="" />}
 				<h1 class="text-xl font-medium">{title}</h1>
-				{pubDate && <time>{new Date(pubDate).toLocaleString("en-US", { year: 'numeric', month: "numeric", day: 'numeric', hour12: false, hour: "numeric", minute: 'numeric' }	)}</time>}
-				{updatedDate && <div>Last updated on <time>{updatedDate}</time></div>}
-				<hr/>
+				{
+					pubDate && (
+						<time>
+							{new Date(pubDate).toLocaleString("en-US", {
+								year: "numeric",
+								month: "numeric",
+								day: "numeric",
+								hour12: false,
+								hour: "numeric",
+								minute: "numeric",
+							})}
+						</time>
+					)
+				}
+				{
+					updatedDate && (
+						<div>
+							Last updated on <time>{updatedDate}</time>
+						</div>
+					)
+				}
+				<hr />
 
-					<slot />
-
+				<slot />
 			</article>
 		</main>
 		<Footer />
