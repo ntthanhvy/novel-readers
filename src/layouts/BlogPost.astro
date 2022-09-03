@@ -35,8 +35,8 @@ const {
 
 	<body>
 		<Header />
-		<main>
-			<article>
+		<main class="container mx-auto mt-10">
+			<article class="whitespace-pre-wrap">
 				{heroImage && (
 					<img
 						width={720}
@@ -45,11 +45,13 @@ const {
 						alt=""
 					/>
 				)}
-				<h1 class="title">{title}</h1>
-				{pubDate && <time>{pubDate}</time>}
+				<h1 class="text-xl font-medium">{title}</h1>
+				{pubDate && <time>{new Date(pubDate).toLocaleString("en-US", { year: 'numeric', month: "numeric", day: 'numeric', hour12: false, hour: "numeric", minute: 'numeric' }	)}</time>}
 				{updatedDate && <div>Last updated on <time>{updatedDate}</time></div>}
 				<hr/>
-				<slot />
+
+					<slot />
+
 			</article>
 		</main>
 		<Footer />

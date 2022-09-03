@@ -8,5 +8,6 @@ import tailwind from "@astrojs/tailwind";
 export default defineConfig({
 	site: "https://ntthanhvy.github.com",
 	base: "/novel-readers",
+	trailingSlash: false,
 	integrations: [mdx(), sitemap(), tailwind()],
 });

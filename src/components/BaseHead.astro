@@ -5,11 +5,11 @@ import '../styles/global.css';
 
 export interface Props {
 	title: string;
-	description: string;
+	description?: string;
 	image?: string;
 }
 
-const { title, description, image = '/placeholder-social.jpg' } = Astro.props;
+const { title, description = '', image = '/placeholder-social.jpg' } = Astro.props;
 ---
 
 <!-- Global Metadata -->
